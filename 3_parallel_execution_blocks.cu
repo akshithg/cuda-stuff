@@ -2,7 +2,8 @@
 // blockIdx -> block index
 
 #include <stdio.h>
-#define N 512
+#include <time.h>
+#define N 2048*2048
 
 __global__ void add(int *a, int *b, int *c) {
     // use blockIdx.x to access block index
@@ -19,7 +20,6 @@ int main(void) {
     int *a, *b, *c; // host copy
     int *d_a, *d_b, *d_c; // device copy
     int size = N * sizeof(int);
-    int i;
 
     // allocate mem for device copies
     cudaMalloc((void**)&d_a, size);
@@ -29,6 +29,10 @@ int main(void) {
     a = (int *)malloc(size); random_ints(a, N);
     b = (int *)malloc(size); random_ints(b, N);
     c = (int *)malloc(size);
+
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
 
     // copy inputs to device
     // cudaMemcpy(destination, source, size, direction);
@@ -42,9 +46,9 @@ int main(void) {
     // copy result back to host
     cudaMemcpy(c, d_c, size, cudaMemcpyDeviceToHost);
 
-    for(i=0; i<N; i++) {
-        printf("%d + %d = %d\n", a[i], b[i], c[i]);
-    }
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("exec time: %f seconds\n", cpu_time_used);
 
     // cleanup
     free(a); free(b); free(c);
